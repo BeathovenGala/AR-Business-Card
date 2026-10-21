@@ -20,6 +20,7 @@ Technology.
 - Natural-feature image tracking of the printed card (no special markers) with MindAR
 - Hand tracking with MediaPipe Hand Landmarker: the index fingertip is a pointer
 - Press buttons by pinching or by holding still for 0.8 s, with a cooldown so nothing fires twice
+- ZOOM starts only on a deliberate pinch or tap, and zoom mode ends by itself after 8 s idle
 - INTRO VIDEO, PORTFOLIO, SKILLS, CONTACT and ZOOM buttons, all anchored to the card in 3D
 - Finger-spread zoom, mouse-wheel zoom and two-finger zoom on phones
 - Mirrored selfie view on laptops, back camera on phones

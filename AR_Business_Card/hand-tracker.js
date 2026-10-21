@@ -1,5 +1,5 @@
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
-import { INDEX_TIP, pinchRatio, nextPinchState, smooth, mirrorX } from "./gesture.js?v=5";
+import { INDEX_TIP, pinchRatio, nextPinchState, smooth, mirrorX } from "./gesture.js?v=6";
 
 const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";

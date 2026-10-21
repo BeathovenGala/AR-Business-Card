@@ -1,19 +1,19 @@
-import { createHandLandmarker, HandPointer } from "./hand-tracker.js?v=5";
-import { dwellStep, pinchTarget, canActivate, mirrorX, zoomFromSpread, clampZoom } from "./gesture.js?v=5";
-import * as ui from "./ui.js?v=5";
+import { createHandLandmarker, HandPointer } from "./hand-tracker.js?v=6";
+import { dwellStep, pinchTarget, canActivate, mirrorX, zoomFromSpread, clampZoom } from "./gesture.js?v=6";
+import * as ui from "./ui.js?v=6";
 import { buildButtons, setButtonState, flash, buildContactPanel, buildSkillsPanel, showPanel, hidePanel,
-  isPanelVisible, setCloseHover, tweenScale } from "./scene3d.js?v=5";
+  isPanelVisible, setCloseHover, tweenScale } from "./scene3d.js?v=6";
 
 const cfg = window.CARD_CONFIG;
 const CARD_W = 1, CARD_H = 600 / 1050;
-const REENTRY_MS = 1500;
 const ZOOM_EASE = 0.3;
+const ZOOM_IDLE_EXIT_MS = 8000;
 // Phones use the back camera (no mirror) and the touch screen for tapping and zooming.
 const IS_TOUCH = matchMedia("(pointer: coarse)").matches;
 const HINTS = {
   normal: IS_TOUCH
     ? "<b>Tap</b> a button &middot; <b>pinch the screen</b> with two fingers to zoom"
-    : "Point at a button &middot; <b>pinch</b> or <b>hold still</b> to press &middot; scroll to zoom",
+    : "Point at a button &middot; <b>pinch</b> or <b>hold still</b> to press &middot; <b>pinch ZOOM</b> to resize",
   panel: "<b>Tap anywhere on the panel</b> to close it",
   zoom: "<b>Spread</b> fingers = bigger &middot; <b>pinch</b> = smaller &middot; hold on <b>DONE</b> to finish",
 };
@@ -30,8 +30,8 @@ window.arStats = stats;
 
 const state = {
   mirrored: cfg.mirror && !IS_TOUCH, open: null, hover: null, lastHover: null, dwell: null,
-  lastActivation: null, lastLost: -Infinity, handActive: false,
-  zoom: 1, zoomTarget: 1, zoomMode: false, zoomAnchor: null,
+  lastActivation: null, handActive: false,
+  zoom: 1, zoomTarget: 1, zoomMode: false, zoomAnchor: null, zoomActiveAt: 0,
 };
 let buttons, contactPanel, skills;
 
@@ -69,6 +69,7 @@ function updateHint() {
 function setZoomMode(on) {
   state.zoomMode = on;
   state.zoomAnchor = null;
+  state.zoomActiveAt = performance.now();
   updateHint();
 }
 
@@ -96,6 +97,9 @@ window.arDebug = {
     zoom: +state.zoomTarget.toFixed(2) }),
   // Lets the automated test drive the finger-spread zoom without a real hand.
   spread: (ratio) => onSpread(ratio),
+  // Simulated hand frames for the automated tests (same code path as MediaPipe callbacks).
+  hand: { move: (x, y, pinching = false, ratio = 1) => handMove({ x, y }, pinching, ratio),
+          pinch: (x, y) => handPinchStart({ x, y }), lost: () => handLost() },
 };
 
 function cardScreenRect() {
@@ -165,13 +169,17 @@ function onSpread(ratio) {
   if (!state.zoomMode || ratio === null) return;
   if (state.hover === "zoom") { state.zoomAnchor = null; return; }
   if (!state.zoomAnchor) state.zoomAnchor = { scale: state.zoomTarget, ratio };
-  state.zoomTarget = zoomFromSpread(state.zoomAnchor.scale, state.zoomAnchor.ratio, ratio);
+  const next = zoomFromSpread(state.zoomAnchor.scale, state.zoomAnchor.ratio, ratio);
+  if (next !== state.zoomTarget) state.zoomActiveAt = performance.now();
+  state.zoomTarget = next;
 }
 
 // One entry point for mouse clicks, pinches and dwell: a 3D action name or a [data-hand] element.
 function press(tgt, now = performance.now()) {
   if (!tgt || !canActivate(state.lastActivation, now)) return;
   state.lastActivation = now;
+  // The finger usually stays on the button after a pinch; mark the hold as used so it cannot press again.
+  state.dwell = { id: tgt, start: now, fired: true };
   if (typeof tgt === "string") activate(tgt);
   else tgt.click();
 }
@@ -190,8 +198,9 @@ function updatePointer(x, y, { fromHand, pinching = false }) {
   if (tgt) state.lastHover = { id: tgt, t: now };
 
   let progress = 0;
-  // In zoom mode only DONE reacts to hold-still, so resizing never presses anything else.
-  const dwellTarget = state.zoomMode && tgt !== "zoom" ? null : tgt;
+  // ZOOM sits where the hand comes up from, so resting on it must not start zoom mode: it needs a pinch,
+  // tap or click. Once in zoom mode, holding still on it (DONE) ends zoom mode.
+  const dwellTarget = tgt === "zoom" && !state.zoomMode ? null : tgt;
   if (fromHand && !pinching) {
     const d = dwellStep(state.dwell, dwellTarget, now);
     state.dwell = d.state;
@@ -215,6 +224,10 @@ function startFrameLoop() {
       ui.setStats(`${stats.fps} FPS`);
       frames = 0; last = now;
     }
+    if (state.zoomMode && now - state.zoomActiveAt > ZOOM_IDLE_EXIT_MS) {
+      setZoomMode(false);
+      refreshButtons();
+    }
     if (Math.abs(state.zoomTarget - state.zoom) > 0.001) {
       state.zoom += (state.zoomTarget - state.zoom) * ZOOM_EASE;
       applyScale();
@@ -225,33 +238,39 @@ function startFrameLoop() {
   requestAnimationFrame(tick);
 }
 
+function handMove({ x, y }, pinching, ratio) {
+  state.handActive = true;
+  updatePointer(x, y, { fromHand: true, pinching: pinching && !state.zoomMode });
+  onSpread(ratio);
+}
+
+function handPinchStart({ x, y }) {
+  stats.pinches++;
+  const now = performance.now();
+  const tgt = pinchTarget(resolveTarget(x, y), state.lastHover, now);
+  if (state.zoomMode && tgt !== "zoom") return; // closing the fingers means "zoom out" here
+  press(tgt, now);
+}
+
+function handLost() {
+  state.handActive = false;
+  state.hover = null;
+  state.dwell = null;
+  state.zoomAnchor = null;
+  ui.hidePointer();
+  ui.setHtmlHover(null);
+  refreshButtons();
+}
+
 async function startHands(video) {
   try {
     const landmarker = await createHandLandmarker();
     ui.setChip("chipHand", false, "Show your hand");
     new HandPointer(landmarker, video, $("handCanvas"), {
       isMirrored: () => state.mirrored,
-      onMove: ({ x, y }, pinching, ratio) => {
-        state.handActive = true;
-        updatePointer(x, y, { fromHand: true, pinching: pinching && !state.zoomMode });
-        onSpread(ratio);
-      },
-      onPinchStart: ({ x, y }) => {
-        stats.pinches++;
-        const now = performance.now();
-        const tgt = pinchTarget(resolveTarget(x, y), state.lastHover, now);
-        if (state.zoomMode && tgt !== "zoom") return; // closing the fingers means "zoom out" here
-        press(tgt, now);
-      },
-      onLost: () => {
-        state.handActive = false;
-        state.hover = null;
-        state.dwell = null;
-        state.zoomAnchor = null;
-        ui.hidePointer();
-        ui.setHtmlHover(null);
-        refreshButtons();
-      },
+      onMove: handMove,
+      onPinchStart: handPinchStart,
+      onLost: handLost,
       onFrame: ({ ms, detected }) => {
         if (stats.handMs.length < 2000) stats.handMs.push(+ms.toFixed(2));
         ui.setChip("chipHand", detected, detected ? "Hand tracked" : "Show your hand");
@@ -295,13 +314,13 @@ function wireTarget() {
   target.addEventListener("targetFound", () => {
     const now = performance.now();
     stats.found = true;
+    // Pop-in only the first time; repeating it on every re-find looked like the card zooming by itself.
+    if (stats.firstFoundMs === null) tweenScale(content.object3D, 0.6, 1, 420);
     if (stats.firstFoundMs === null) stats.firstFoundMs = Math.round(now - stats.startedAt);
-    if (now - state.lastLost > REENTRY_MS) tweenScale(content.object3D, 0.6, 1, 420);
     ui.setChip("chipCard", true, "Card tracked");
   });
   target.addEventListener("targetLost", () => {
     stats.found = false;
-    state.lastLost = performance.now();
     state.hover = null;
     ui.setChip("chipCard", false, "Looking for card");
     refreshButtons();
