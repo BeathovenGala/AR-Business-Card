@@ -1,0 +1,14 @@
+{
+  "name": "ar-business-card-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "sync-web": "node copy-web.mjs && npx cap sync android",
+    "build-apk": "npm run sync-web && cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/cli": "^6.2.2",
+    "@capacitor/core": "^6.2.2"
+  }
+}

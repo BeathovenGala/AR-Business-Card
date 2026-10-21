@@ -1,0 +1,7 @@
+node_modules/
+AR_Card_App/www/
+AR_Card_App/*.apk
+*.apk
+__pycache__/
+.DS_Store
+Thumbs.db

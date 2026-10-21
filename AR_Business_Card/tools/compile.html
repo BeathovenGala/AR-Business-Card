@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Compile AR Target</title>
+<style>body { font-family: Segoe UI, sans-serif; padding: 24px; } img { max-width: 420px; display: block; margin: 12px 0; }</style>
+</head>
+<body>
+<h2>Compile card image into assets/targets.mind</h2>
+<p>Run this after changing <code>assets/card.png</code>. Status: <b id="status">loading…</b></p>
+<img id="card" src="../assets/card.png">
+<script type="module">
+  import "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js";
+  const status = document.getElementById("status");
+  const img = document.getElementById("card");
+  await img.decode();
+  const compiler = new window.MINDAR.IMAGE.Compiler();
+  const t0 = performance.now();
+  await compiler.compileImageTargets([img], (p) => { status.textContent = `compiling ${p.toFixed(0)}%`; });
+  const data = await compiler.exportData();
+  const res = await fetch("/save-target", { method: "POST", body: data });
+  const secs = ((performance.now() - t0) / 1000).toFixed(1);
+  status.textContent = res.ok ? `done in ${secs}s, saved ${data.byteLength} bytes` : `save failed (${res.status})`;
+  window.compileResult = { ok: res.ok, secs: +secs, bytes: data.byteLength,
+    points: compiler.data?.[0]?.trackingData?.map((d) => d.points.length) };
+</script>
+</body>
+</html>

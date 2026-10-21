@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Print AR Card</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  body { margin: 0; font-family: "Segoe UI", sans-serif; color: #222; }
+  h1 { font-size: 15pt; margin: 0 0 2mm; }
+  p { font-size: 9.5pt; margin: 0 0 5mm; color: #555; }
+  .cut { border: 0.3mm dashed #999; padding: 2mm; display: inline-block; }
+  .cut img { display: block; }
+  .big img { width: 160mm; }
+  .small { margin-top: 8mm; display: flex; gap: 8mm; }
+  .small img { width: 89mm; }
+  .label { font-size: 8.5pt; color: #777; margin-top: 2mm; }
+</style>
+</head>
+<body>
+  <h1>AR Business Card: print sheet</h1>
+  <p>Print at 100% scale (no "fit to page"). Use the large card for the laptop demo: it is easiest for the webcam to track.
+     Cut along the dashed lines. Matte paper works better than glossy (less glare).</p>
+  <div class="cut big"><img src="../assets/card.png"></div>
+  <div class="label">Demo size: 160 × 91 mm</div>
+  <div class="small">
+    <div><div class="cut"><img src="../assets/card.png"></div><div class="label">Standard card: 89 × 51 mm</div></div>
+    <div><div class="cut"><img src="../assets/card.png"></div><div class="label">Standard card: 89 × 51 mm</div></div>
+  </div>
+</body>
+</html>

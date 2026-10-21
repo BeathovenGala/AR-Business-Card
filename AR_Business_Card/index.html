@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>AR Business Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="style.css?v=5">
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="components.js?v=5"></script>
+  <script src="config.js?v=5"></script>
+</head>
+<body>
+  <div id="start" class="screen">
+    <div class="start-grid">
+      <div class="start-copy">
+        <span class="eyebrow">AR / VR Mini Project</span>
+        <h1>Your card,<br><em>come alive.</em></h1>
+        <ol class="steps">
+          <li><b>1</b><span>Hold the printed card (or the image on your phone) up to the webcam.</span></li>
+          <li><b>2</b><span>Point at a button with your index finger.</span></li>
+          <li><b>3</b><span><strong>Pinch</strong> thumb and finger, or just <strong>hold still</strong> for a moment, to press.</span></li>
+          <li><b>4</b><span>Press <strong>ZOOM</strong>, then spread or pinch your fingers to resize. Scrolling works too.</span></li>
+        </ol>
+        <button id="startBtn" data-hand>Start AR</button>
+        <p class="small">The mouse works too. Press <kbd>M</kbd> to mirror, <kbd>Z</kbd> to zoom, <kbd>H</kbd> for stats.</p>
+      </div>
+      <div class="start-card"><img src="assets/card.png" alt="The printed AR business card"></div>
+    </div>
+  </div>
+
+  <div id="scanning" class="hidden">
+    <div class="scan-frame"><i></i><i></i><i></i><i></i></div>
+    <p>Show the card to the camera</p>
+  </div>
+
+  <div id="status">
+    <span class="chip" id="chipCard"><i></i>Card</span>
+    <span class="chip" id="chipHand"><i></i>Hand</span>
+    <span class="chip stats hidden" id="chipStats">0 FPS</span>
+  </div>
+  <div id="hint"></div>
+
+  <canvas id="handCanvas"></canvas>
+  <div id="pointer"><svg viewBox="0 0 44 44"><circle class="track" cx="22" cy="22" r="18"/><circle class="fill" id="pointerFill" cx="22" cy="22" r="18"/></svg></div>
+
+  <div id="videoBox" class="hidden">
+    <div class="video-bar"><span id="videoTitle"></span><button id="videoClose" data-hand aria-label="Close video">&times;</button></div>
+    <div class="video-frame" id="videoFrame"></div>
+  </div>
+
+  <div id="webModal" class="hidden">
+    <div class="web-window">
+      <div class="web-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="url" id="webUrl"></span>
+        <a id="webOpen" data-hand target="_blank" rel="noopener">Open in new tab &#8599;</a>
+        <button id="webClose" data-hand aria-label="Close portfolio">&times;</button>
+      </div>
+      <iframe id="webFrame" title="Portfolio"></iframe>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden"></div>
+
+  <a-scene id="scene"
+    mindar-image="imageTargetSrc: assets/targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: #scanning; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 40; warmupTolerance: 3"
+    color-space="sRGB" renderer="colorManagement: true; antialias: true"
+    vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-entity light="type: ambient; intensity: 0.9"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8" position="0.3 0.8 1"></a-entity>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity id="target" mindar-image-target="targetIndex: 0">
+      <a-entity id="content">
+        <a-entity rounded-panel="width: 1.07; height: 0.64; radius: 0.05; border: 0.012; color: #22c3e6" pulse position="0 0 0.002"></a-entity>
+        <a-entity id="zoomable">
+
+        <a-entity id="header" position="0 0.425 0.02">
+          <a-entity rounded-panel="width: 0.8; height: 0.16; radius: 0.05; color: #0f1b3d; opacity: 0.94"></a-entity>
+          <a-entity rounded-panel="width: 0.022; height: 0.022; radius: 0.011; color: #ff8a3d" position="-0.34 0.025 0.002"></a-entity>
+          <a-text id="nameText" value="" font="exo2bold" anchor="left" color="#ffffff" width="1.25" position="-0.31 0.026 0.004"></a-text>
+          <a-text id="roleText" value="" font="exo2bold" anchor="left" color="#22c3e6" width="0.62" position="-0.31 -0.038 0.004"></a-text>
+        </a-entity>
+
+        <a-entity ar-cube position="-0.66 0.3 0.09"></a-entity>
+
+        <a-entity id="panels" position="0 0 0.07"></a-entity>
+        </a-entity>
+        <a-entity id="buttons" position="0.7 0 0.3"></a-entity>
+      </a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script type="module" src="app.js?v=5"></script>
+</body>
+</html>

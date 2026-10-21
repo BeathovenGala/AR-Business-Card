@@ -1,0 +1,6 @@
+{
+  "appId": "dev.harshiljsoni.arcard",
+  "appName": "AR Business Card",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}

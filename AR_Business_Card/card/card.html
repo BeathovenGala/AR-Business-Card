@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AR Business Card</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #fff; }
+  .card {
+    position: relative; width: 1050px; height: 600px; overflow: hidden;
+    background: #0f1b3d; color: #fff; font-family: "Bahnschrift", "Segoe UI", sans-serif;
+  }
+  .grid { position: absolute; inset: 0; }
+  .accent { position: absolute; left: 0; top: 0; bottom: 0; width: 22px;
+    background: linear-gradient(#ff8a3d 0 33%, #22c3e6 33% 66%, #ffd23f 66%); }
+  .name { position: absolute; left: 80px; top: 92px; font-size: 76px; font-weight: 700; letter-spacing: 1px; }
+  .role { position: absolute; left: 82px; top: 192px; font-size: 30px; color: #22c3e6; letter-spacing: 2px; }
+  .rule { position: absolute; left: 82px; top: 250px; width: 120px; height: 6px; background: #ff8a3d; }
+  .lines { position: absolute; left: 82px; top: 292px; font-size: 25px; line-height: 44px; color: #dfe6f5; font-family: "Segoe UI", sans-serif; }
+  .lines b { color: #ffd23f; font-weight: 600; display: inline-block; width: 40px; }
+  .inst { position: absolute; left: 82px; bottom: 44px; font-size: 22px; letter-spacing: 3px; color: #9fb0d6; }
+  .emblem { position: absolute; right: 70px; top: 52px; }
+  .qr { position: absolute; right: 70px; bottom: 40px; background: #fff; padding: 8px; border-radius: 6px; }
+  .qr img { display: block; width: 130px; height: 130px; }
+  .qrlabel { position: absolute; right: 222px; bottom: 74px; font-size: 18px; text-align: right; color: #9fb0d6; line-height: 26px; }
+  .badge { position: absolute; right: 70px; top: 20px; font-size: 17px; letter-spacing: 4px; color: #ffd23f; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <svg class="grid" width="1050" height="600">
+    <defs>
+      <pattern id="dots" width="35" height="35" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.6" fill="#2b3f73"/>
+      </pattern>
+    </defs>
+    <rect width="1050" height="600" fill="url(#dots)"/>
+    <path d="M560 0 L720 160 L720 330 L860 470 L1050 470" stroke="#1f3d7a" stroke-width="3" fill="none"/>
+    <path d="M600 600 L600 520 L690 430 L690 380" stroke="#1f3d7a" stroke-width="3" fill="none"/>
+    <circle cx="690" cy="380" r="7" fill="#22c3e6"/>
+    <circle cx="720" cy="160" r="7" fill="#ff8a3d"/>
+    <circle cx="860" cy="470" r="7" fill="#ffd23f"/>
+    <path d="M40 590 L250 590 L270 576 L470 576" stroke="#1f3d7a" stroke-width="3" fill="none"/>
+    <rect x="466" y="572" width="8" height="8" fill="#22c3e6"/>
+  </svg>
+  <div class="accent"></div>
+  <div class="badge">AR · ENABLED</div>
+  <svg class="emblem" width="240" height="250" viewBox="0 0 240 250">
+    <polygon points="120,10 220,65 120,120 20,65" fill="#22c3e6"/>
+    <polygon points="20,65 120,120 120,235 20,180" fill="#ff8a3d"/>
+    <polygon points="220,65 120,120 120,235 220,180" fill="#ffd23f"/>
+    <polygon points="120,48 168,74 120,100 72,74" fill="#0f1b3d"/>
+    <text x="120" y="83" text-anchor="middle" font-size="26" font-weight="700" fill="#fff" font-family="Bahnschrift">AR</text>
+    <path d="M45 120 L95 147 M45 150 L95 177" stroke="#0f1b3d" stroke-width="7"/>
+    <path d="M145 147 L195 120 M145 177 L195 150 M145 207 L170 193" stroke="#0f1b3d" stroke-width="7"/>
+  </svg>
+  <div class="name">HARSHIL SONI</div>
+  <div class="role">AR / VR DEVELOPER</div>
+  <div class="rule"></div>
+  <div class="lines">
+    <div><b>01</b>B.Tech · Computer Science &amp; Design</div>
+    <div><b>02</b>Unity · WebXR · Three.js</div>
+    <div><b>03</b>Point a camera here to see more</div>
+  </div>
+  <div class="inst">A. D. PATEL INSTITUTE OF TECHNOLOGY</div>
+  <div class="qrlabel">scan for<br>my intro</div>
+  <div class="qr"><img src="qr.png" alt=""></div>
+</div>
+</body>
+</html>
